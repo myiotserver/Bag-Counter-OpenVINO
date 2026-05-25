@@ -102,4 +102,4 @@ UI tetap mendukung:
 ## Catatan
 
 - Model OpenVINO perlu sudah tersedia sebelum pipeline dijalankan jika `MODEL_PATH` diarahkan ke folder export.
-- Untuk Intel GPU, kompatibilitas akhir tetap bergantung pada driver Intel GPU dan instalasi OpenVINO di mesin Windows Anda.
+- Untuk Intel GPU, kompatibilitas akhir tetap bergantung pada driver Intel GPU dan instalasi OpenVINO di mesin komputer Anda.
