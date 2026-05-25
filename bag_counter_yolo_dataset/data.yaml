@@ -1,0 +1,7 @@
+path: C:\Users\ThinkPad Yoga L13\Nextcloud\Documents\Programming\python_bag_counter
+  v1.0.1\bag_counter_yolo_dataset
+train: images/train
+val: images/val
+test: images/test
+names:
+  0: bag

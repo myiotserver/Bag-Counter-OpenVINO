@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" width="1920" height="1080">
+  <defs>
+    <!-- Base warm milk white -->
+    <radialGradient id="base" cx="50%" cy="50%" r="80%">
+      <stop offset="0%" stop-color="#FBF7F0"/>
+      <stop offset="100%" stop-color="#F2EBE0"/>
+    </radialGradient>
+
+    <!-- Sea blue top-right blob -->
+    <radialGradient id="blue1" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#1E9FD4" stop-opacity="0.82"/>
+      <stop offset="60%" stop-color="#2B8DC0" stop-opacity="0.45"/>
+      <stop offset="100%" stop-color="#1A78AA" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Sea blue bottom-left blob -->
+    <radialGradient id="blue2" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#1A90C8" stop-opacity="0.72"/>
+      <stop offset="60%" stop-color="#2280B4" stop-opacity="0.38"/>
+      <stop offset="100%" stop-color="#176898" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Sea blue mid accent -->
+    <radialGradient id="blue3" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#50C4E8" stop-opacity="0.60"/>
+      <stop offset="60%" stop-color="#2AACD8" stop-opacity="0.30"/>
+      <stop offset="100%" stop-color="#1890C0" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Calm orange top-left -->
+    <radialGradient id="orange1" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#F0A06A" stop-opacity="0.38"/>
+      <stop offset="100%" stop-color="#E07840" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Calm orange bottom-right -->
+    <radialGradient id="orange2" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#EDA070" stop-opacity="0.30"/>
+      <stop offset="100%" stop-color="#D86B38" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Soft orange mid -->
+    <radialGradient id="orange3" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#F5BB8A" stop-opacity="0.22"/>
+      <stop offset="100%" stop-color="#E89060" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Milk white center bloom -->
+    <radialGradient id="bloom" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#FFFDF8" stop-opacity="0.90"/>
+      <stop offset="100%" stop-color="#FBF7F0" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Base background -->
+  <rect width="1920" height="1080" fill="url(#base)"/>
+
+  <!-- Sea blue blobs -->
+  <ellipse cx="1650" cy="160" rx="680" ry="560" fill="url(#blue1)"/>
+  <ellipse cx="1780" cy="820" rx="520" ry="460" fill="url(#blue2)"/>
+  <ellipse cx="980" cy="80" rx="500" ry="380" fill="url(#blue3)"/>
+
+  <!-- Calm orange accents -->
+  <ellipse cx="160" cy="200" rx="560" ry="440" fill="url(#orange1)"/>
+  <ellipse cx="280" cy="940" rx="480" ry="400" fill="url(#orange2)"/>
+  <ellipse cx="820" cy="700" rx="380" ry="300" fill="url(#orange3)"/>
+
+  <!-- Center bloom keeps milk-white feel in the middle -->
+  <ellipse cx="960" cy="540" rx="640" ry="520" fill="url(#bloom)"/>
+
+  <!-- Subtle noise-like organic shape overlays for softness -->
+  <ellipse cx="1200" cy="400" rx="300" ry="220" fill="#1A9ED4" fill-opacity="0.18"/>
+  <ellipse cx="500" cy="600" rx="260" ry="200" fill="#F2AA72" fill-opacity="0.07"/>
+  <ellipse cx="1500" cy="600" rx="220" ry="180" fill="#1AAAD8" fill-opacity="0.16"/>
+</svg>

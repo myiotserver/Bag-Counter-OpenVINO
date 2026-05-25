@@ -1,0 +1,1087 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bag Counter — Live Dashboard</title>
+  <style>
+    /* ── Reset & base ────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    /* ── Dark Mode (Default) ────────────────────── */
+    :root {
+      --bg:       #0f1117;
+      --surface:  #1a1d27;
+      --border:   #2a2d3e;
+      --accent:   #4f8ef7;
+      --green:    #22c55e;
+      --red:      #ef4444;
+      --yellow:   #f59e0b;
+      --text:     #e2e8f0;
+      --muted:    #64748b;
+      --radius:   10px;
+      --bg-image: url('/wallpaper-dark.svg');
+    }
+    
+    /* ── Light Mode ────────────────────────────── */
+    html.light-mode {
+      --bg:       #f8f9fa;
+      --surface:  #ffffff;
+      --border:   #e0e6ed;
+      --accent:   #2563eb;
+      --green:    #10b981;
+      --red:      #ef4444;
+      --yellow:   #f59e0b;
+      --text:     #1e293b;
+      --muted:    #94a3b8;
+      --radius:   10px;
+      --bg-image: url('/wallpaper-light-2.svg');
+    }
+    
+    body {
+      background-color: var(--bg);
+      background-image: var(--bg-image);
+      background-attachment: fixed;
+      background-size: cover;
+      background-position: center;
+      color: var(--text);
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      font-size: 14px;
+      min-height: 100vh;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    /* ── Header ──────────────────────────────────── */
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      transition: background 0.3s ease, border-color 0.3s ease;
+    }
+    header .logo { font-size: 22px; }
+    header h1 { font-size: 18px; font-weight: 700; letter-spacing: .3px; }
+    header .subtitle { color: var(--muted); font-size: 12px; }
+    
+    .header-controls {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .theme-toggle {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px;
+      border-radius: 20px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 18px;
+    }
+    .theme-toggle:hover {
+      background: rgba(79, 142, 247, 0.1);
+      border-color: var(--accent);
+    }
+    .status-pill {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+      background: #1e2435;
+      border: 1px solid var(--border);
+    }
+    .status-pill .dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--muted);
+      transition: background .3s;
+    }
+    .status-pill.running .dot { background: var(--green); box-shadow: 0 0 6px var(--green); }
+    .status-pill.error   .dot { background: var(--red); }
+
+    /* ── Layout ──────────────────────────────────── */
+    .layout {
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      gap: 16px;
+      padding: 16px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    @media (max-width: 960px) {
+      .layout { grid-template-columns: 1fr; }
+    }
+
+    /* ── Card ────────────────────────────────────── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      transition: background 0.3s ease, border-color 0.3s ease;
+    }
+    .card-header {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      font-weight: 600;
+      font-size: 13px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .6px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: border-color 0.3s ease, color 0.3s ease;
+    }
+    .card-body { padding: 16px; }
+
+    /* ── Live preview ────────────────────────────── */
+    .video-wrap {
+      position: relative;
+      width: 100%;
+      background: #000;
+      border-radius: 0;
+      overflow: hidden;
+      aspect-ratio: 16/9;
+    }
+    .video-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+    }
+    .video-overlay {
+      position: absolute;
+      top: 10px; right: 10px;
+      background: rgba(0,0,0,.55);
+      border-radius: 6px;
+      padding: 4px 10px;
+      font-size: 12px;
+      color: #fff;
+      backdrop-filter: blur(4px);
+    }
+
+    /* ── Counter badge ───────────────────────────── */
+    .count-badge {
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+      padding: 14px 0 8px;
+    }
+    .count-badge .num {
+      font-size: 52px;
+      font-weight: 800;
+      color: var(--accent);
+      line-height: 1;
+      font-variant-numeric: tabular-nums;
+      transition: color .2s;
+    }
+    .count-badge .unit { font-size: 16px; color: var(--muted); }
+
+    /* ── Controls ────────────────────────────────── */
+    .controls { display: flex; flex-direction: column; gap: 10px; }
+    label { font-size: 12px; color: var(--muted); display: block; margin-bottom: 4px; }
+    input[type="text"], input[type="number"], select {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 8px 10px;
+      border-radius: 6px;
+      font-size: 13px;
+      outline: none;
+      transition: border .2s, background 0.3s ease, color 0.3s ease;
+    }
+    input:focus, select:focus { border-color: var(--accent); }
+
+    .btn-row { display: flex; gap: 8px; margin-top: 4px; }
+    button {
+      flex: 1;
+      padding: 9px 14px;
+      border-radius: 7px;
+      border: none;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity .15s, transform .1s;
+    }
+    button:active { transform: scale(.97); }
+    button:disabled { opacity: .4; cursor: default; }
+    .btn-start { background: var(--green); color: #fff; }
+    .btn-stop  { background: var(--red);   color: #fff; }
+    .btn-apply { background: var(--accent); color: #fff; }
+
+    /* ── Parameter sliders ───────────────────────── */
+    .param-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .param-item { display: flex; flex-direction: column; gap: 4px; }
+    .param-item span { font-size: 11px; color: var(--muted); text-align: right; }
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--accent);
+      cursor: pointer;
+    }
+
+    /* ── Detection table ─────────────────────────── */
+    #det-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    #det-table th {
+      text-align: left;
+      padding: 6px 8px;
+      color: var(--muted);
+      border-bottom: 1px solid var(--border);
+      font-weight: 600;
+      font-size: 11px;
+      text-transform: uppercase;
+    }
+    #det-table td {
+      padding: 7px 8px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: middle;
+    }
+    #det-table tr:last-child td { border-bottom: none; }
+    .conf-bar-wrap { background: var(--bg); border-radius: 4px; height: 6px; width: 80px; overflow: hidden; }
+    .conf-bar { height: 6px; border-radius: 4px; background: var(--accent); transition: width .3s; }
+    .label-chip {
+      background: rgba(79,142,247,.18);
+      color: var(--accent);
+      border-radius: 4px;
+      padding: 2px 7px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .empty-row td { color: var(--muted); text-align: center; padding: 24px; }
+
+    /* ── Log ─────────────────────────────────────── */
+    #log-box {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 10px 12px;
+      font-family: 'Cascadia Code', 'Consolas', monospace;
+      font-size: 11px;
+      height: 130px;
+      overflow-y: auto;
+      color: #94a3b8;
+      transition: background 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+    }
+    .log-line { line-height: 1.7; }
+    .log-ok   { color: var(--green); }
+    .log-err  { color: var(--red); }
+    .log-info { color: var(--accent); }
+
+    /* ── Stats grid ──────────────────────────────── */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 12px;
+    }
+    .stats-grid .stat-box:last-child:nth-child(3n + 1) {
+      grid-column: 2;
+    }
+    @media (max-width: 640px) {
+      .stats-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+      .stats-grid .stat-box:last-child:nth-child(odd) {
+        grid-column: 1 / -1;
+      }
+    }
+    .stat-box {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px 12px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      min-height: 70px;
+      transition: border-color 0.2s, background 0.3s ease, color 0.3s ease;
+    }
+    .stat-box:hover {
+      border-color: var(--accent);
+    }
+    .stat-box .val { 
+      font-size: 24px; 
+      font-weight: 700; 
+      color: var(--text); 
+      line-height: 1.2;
+      transition: color 0.3s ease;
+    }
+    .stat-box .lbl { 
+      font-size: 11px; 
+      color: var(--muted); 
+      margin-top: 6px;
+      line-height: 1.4;
+      transition: color 0.3s ease;
+    }
+
+    /* ── Timestamp ───────────────────────────────── */
+    .ts { font-size: 11px; color: var(--muted); margin-top: 6px; }
+
+    /* ── Node-RED hint ───────────────────────────── */
+    .hint-box {
+      background: rgba(79,142,247,.08);
+      border: 1px solid rgba(79,142,247,.25);
+      border-radius: 8px;
+      padding: 12px 14px;
+      font-size: 12px;
+      color: #93b4f5;
+      line-height: 1.7;
+      transition: background 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+    }
+    html.light-mode .hint-box {
+      background: rgba(37, 99, 235, .08);
+      border: 1px solid rgba(37, 99, 235, .25);
+      color: #1e3a8a;
+    }
+    .hint-box code {
+      background: rgba(79,142,247,.15);
+      padding: 1px 5px;
+      border-radius: 3px;
+      font-family: monospace;
+    }
+
+    /* ── File upload drag & drop ──────────────────── */
+    .file-input-zone {
+      position: relative;
+      border: 2px dashed var(--border);
+      border-radius: 8px;
+      padding: 24px 16px;
+      text-align: center;
+      transition: all 0.2s;
+      cursor: pointer;
+      background: rgba(79,142,247,.03);
+    }
+    .file-input-zone:hover {
+      border-color: var(--accent);
+      background: rgba(79,142,247,.08);
+    }
+    .file-input-zone.drag-over {
+      border-color: var(--accent);
+      background: rgba(79,142,247,.12);
+      box-shadow: 0 0 0 3px rgba(79,142,247,.15);
+    }
+    .file-input-zone input[type="file"] {
+      display: none;
+    }
+    .file-input-zone .label-text {
+      font-size: 13px;
+      color: var(--text);
+      font-weight: 500;
+      margin-bottom: 6px;
+      display: block;
+      transition: color 0.3s ease;
+    }
+    .file-input-zone .hint-text {
+      font-size: 12px;
+      color: var(--muted);
+      transition: color 0.3s ease;
+    }
+    .file-input-zone .icon {
+      font-size: 28px;
+      margin-bottom: 8px;
+      display: block;
+    }
+    .file-selected {
+      background: rgba(34,197,94,.08);
+      border-color: rgba(34,197,94,.3);
+    }
+    .file-selected .label-text {
+      color: var(--green);
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Header ─────────────────────────────────────────── -->
+<header>
+  <span class="logo">📦</span>
+  <div>
+    <h1>Bag Counter</h1>
+    <div class="subtitle">Local YOLO / OpenVINO · Live Dashboard</div>
+  </div>
+  <div class="header-controls">
+    <div class="theme-toggle" id="theme-toggle" title="Toggle Light/Dark Mode">
+      <span id="theme-icon">🌙</span>
+    </div>
+    <div class="status-pill" id="status-pill">
+      <div class="dot"></div>
+      <span id="status-text">Idle</span>
+    </div>
+  </div>
+</header>
+
+<!-- ── Main layout ────────────────────────────────────── -->
+<div class="layout">
+
+  <!-- Kolom kiri: video + deteksi -->
+  <div style="display:flex; flex-direction:column; gap:16px;">
+
+    <!-- Live preview -->
+    <div class="card">
+      <div class="card-header">🎥 Live Preview</div>
+      <div class="video-wrap">
+        <img id="mjpeg" src="/video_feed" alt="Live stream" />
+        <div class="video-overlay" id="frame-label">Frame #0</div>
+      </div>
+    </div>
+
+    <!-- Tabel deteksi -->
+    <div class="card">
+      <div class="card-header">🔍 Hasil Deteksi Terbaru</div>
+      <div class="card-body" style="padding:0;">
+        <table id="det-table">
+          <thead>
+            <tr>
+              <th>Track</th>
+              <th>Label</th>
+              <th>Confidence</th>
+              <th>Bounding Box</th>
+            </tr>
+          </thead>
+          <tbody id="det-tbody">
+            <tr class="empty-row"><td colspan="4">Belum ada deteksi</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Log -->
+    <div class="card">
+      <div class="card-header">📋 Log</div>
+      <div class="card-body" style="padding:10px;">
+        <div id="log-box"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Kolom kanan: kontrol + statistik -->
+  <div style="display:flex; flex-direction:column; gap:16px;">
+
+    <!-- Counter besar -->
+    <div class="card">
+      <div class="card-header">📊 Total Deteksi</div>
+      <div class="card-body">
+        <div class="count-badge">
+          <div class="num" id="count-num">0</div>
+          <div class="unit">objek terdeteksi</div>
+        </div>
+        <div class="stats-grid">
+          <div class="stat-box">
+            <div class="val" id="stat-frames">0</div>
+            <div class="lbl">Frame<br>dikirim</div>
+          </div>
+          <div class="stat-box">
+            <div class="val" id="stat-avg">—</div>
+            <div class="lbl">Rata-rata<br>Confidence</div>
+          </div>
+          <div class="stat-box">
+            <div class="val" id="stat-fps">—</div>
+            <div class="lbl">Inferensi<br>per menit</div>
+          </div>
+          <div class="stat-box" style="border-color:#f59e0b44;">
+            <div class="val" id="stat-latency" style="color:var(--yellow);">—</div>
+            <div class="lbl">Latency<br>(ms)</div>
+          </div>
+          <div class="stat-box" style="border-color:#22c55e44;">
+            <div class="val" id="stat-count-in" style="color:var(--green);">0</div>
+            <div class="lbl">Count IN</div>
+          </div>
+          <div class="stat-box" style="border-color:#ef444444;">
+            <div class="val" id="stat-count-out" style="color:var(--red);">0</div>
+            <div class="lbl">Count OUT</div>
+          </div>
+          <div class="stat-box">
+            <div class="val" id="stat-net">0</div>
+            <div class="lbl">Net Balance</div>
+          </div>
+        </div>
+        <div class="ts" id="last-ts" style="margin-top:12px;">—</div>
+      </div>
+    </div>
+
+    <!-- Kontrol source & pipeline -->
+    <div class="card">
+      <div class="card-header">⚙️ Video Source</div>
+      <div class="card-body controls">
+
+        <div>
+          <label>Source</label>
+          <select id="source-type" onchange="onSourceTypeChange()">
+            <option value="webcam">Webcam</option>
+            <option value="rtsp">RTSP Stream</option>
+            <option value="file">File Video / Gambar</option>
+          </select>
+        </div>
+
+        <div id="webcam-input">
+          <label>Index Kamera</label>
+          <input type="number" id="webcam-idx" value="0" min="0" max="9" />
+        </div>
+
+        <div id="rtsp-input" style="display:none;">
+          <label>RTSP URL</label>
+          <input type="text" id="rtsp-url" placeholder="rtsp://user:pass@192.168.1.100/stream" />
+        </div>
+
+        <div id="file-input" style="display:none;">
+          <label>File Video / Gambar</label>
+          <div class="file-input-zone" id="file-drop-zone">
+            <span class="icon">📁</span>
+            <span class="label-text">Drag & drop file atau klik untuk pilih</span>
+            <span class="hint-text">Format: .mp4, .avi, .mov, .jpg, .png (max 2GB)</span>
+            <input type="file" id="file-picker" accept="video/*,image/*" />
+          </div>
+          <input type="text" id="file-path" style="display:none;" placeholder="C:\video\rekaman.mp4" />
+          <div style="font-size:12px; color:var(--muted); margin-top:8px; word-break:break-all;" id="file-info"></div>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn-start" id="btn-start" onclick="startPipeline()">▶ Start</button>
+          <button class="btn-stop"  id="btn-stop"  onclick="stopPipeline()" disabled>⏹ Stop</button>
+        </div>
+        <div id="ctrl-msg" style="font-size:12px; color:var(--muted); min-height:16px;"></div>
+      </div>
+    </div>
+
+    <!-- Parameter inferensi -->
+    <div class="card">
+      <div class="card-header">🎛️ Parameter Inferensi</div>
+      <div class="card-body controls">
+        <div>
+          <label>Model AI</label>
+          <select id="model-selector" onchange="onModelChange()">
+            <option value="">— Pilih model tersedia —</option>
+          </select>
+          <div style="font-size:11px; color:var(--muted); margin-top:6px;" id="model-info"></div>
+        </div>
+        <div style="display:none;" id="custom-model-div">
+          <label>Custom Model Path</label>
+          <input type="text" id="model-path" placeholder="path/to/custom/model" />
+        </div>
+        <div>
+          <label>Inference Device</label>
+          <select id="infer-device">
+            <option value="intel:gpu">intel:gpu</option>
+            <option value="intel:cpu">intel:cpu</option>
+            <option value="cpu">cpu</option>
+          </select>
+        </div>
+        <div class="param-grid">
+          <div class="param-item">
+            <label>Confidence</label>
+            <input type="range" id="sl-conf" min="0.05" max="0.95" step="0.05" value="0.25"
+                   oninput="document.getElementById('lbl-conf').textContent=this.value" />
+            <span id="lbl-conf">0.25</span>
+          </div>
+          <div class="param-item">
+            <label>IoU</label>
+            <input type="range" id="sl-iou" min="0.1" max="0.95" step="0.05" value="0.7"
+                   oninput="document.getElementById('lbl-iou').textContent=this.value" />
+            <span id="lbl-iou">0.70</span>
+          </div>
+          <div class="param-item">
+            <label>Image Size</label>
+            <select id="sl-imgsz">
+              <option value="320">320</option>
+              <option value="512">512</option>
+              <option value="640" selected>640</option>
+              <option value="1280">1280</option>
+            </select>
+          </div>
+          <div class="param-item">
+            <label>Frame Skip</label>
+            <input type="number" id="sl-skip" min="1" max="30" value="5" />
+          </div>
+        </div>
+        <div class="btn-row">
+          <button class="btn-apply" onclick="applyConfig()">✔ Terapkan</button>
+        </div>
+        <div id="cfg-msg" style="font-size:12px; color:var(--muted); min-height:16px;"></div>
+        <div style="font-size:11px; color:var(--muted);">
+          Perubahan model path atau device diterapkan pada start pipeline berikutnya.
+        </div>
+      </div>
+    </div>
+
+    <!-- Node-RED info -->
+    <div class="card">
+      <div class="card-header">🔗 Integrasi Node-RED</div>
+      <div class="card-body">
+        <div class="hint-box">
+          <strong>Polling</strong> (HTTP request node)<br>
+          <code id="url-results">http://localhost:5000/results</code><br><br>
+          <strong>Live push</strong> (SSE / contrib node)<br>
+          <code id="url-stream">http://localhost:5000/results/stream</code><br><br>
+          <strong>Health check</strong><br>
+          <code id="url-health">http://localhost:5000/health</code>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- kolom kanan -->
+</div><!-- layout -->
+
+<!-- ── JavaScript ─────────────────────────────────────── -->
+<script>
+  // ── Theme Toggle ────────────────────────────────────────
+  function initializeTheme() {
+    const savedTheme = localStorage.getItem("theme") || "dark";
+    const htmlElement = document.documentElement;
+    const themeToggle = document.getElementById("theme-toggle");
+    const themeIcon = document.getElementById("theme-icon");
+
+    function setTheme(theme) {
+      localStorage.setItem("theme", theme);
+      if (theme === "light") {
+        htmlElement.classList.add("light-mode");
+        themeIcon.textContent = "🌞";
+      } else {
+        htmlElement.classList.remove("light-mode");
+        themeIcon.textContent = "🌙";
+      }
+    }
+
+    // Set initial theme
+    setTheme(savedTheme);
+
+    // Toggle theme on button click
+    themeToggle.addEventListener("click", () => {
+      const currentTheme = htmlElement.classList.contains("light-mode") ? "light" : "dark";
+      const newTheme = currentTheme === "light" ? "dark" : "light";
+      setTheme(newTheme);
+    });
+  }
+
+  // Initialize theme on page load
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initializeTheme);
+  } else {
+    initializeTheme();
+  }
+
+  const PORT = {{ bridge_port }};
+  const BASE = `http://${location.hostname}:${PORT}`;
+  let fileUploadInFlight = null;
+
+  // Perbarui URL hint box
+  document.getElementById("url-results").textContent = `${BASE}/results`;
+  document.getElementById("url-stream").textContent  = `${BASE}/results/stream`;
+  document.getElementById("url-health").textContent  = `${BASE}/health`;
+
+  // ── Log helper ──────────────────────────────────────────────
+  let logCount = 0;
+  function log(msg, cls = "") {
+    const box = document.getElementById("log-box");
+    const line = document.createElement("div");
+    line.className = "log-line " + cls;
+    const now = new Date().toLocaleTimeString("id-ID");
+    line.textContent = `[${now}] ${msg}`;
+    box.appendChild(line);
+    if (++logCount > 200) box.removeChild(box.firstChild);
+    box.scrollTop = box.scrollHeight;
+  }
+
+  // ── Source type toggle ────────────────────────────────────
+  function onSourceTypeChange() {
+    const t = document.getElementById("source-type").value;
+    document.getElementById("webcam-input").style.display = t === "webcam" ? "block" : "none";
+    document.getElementById("rtsp-input").style.display   = t === "rtsp"   ? "block" : "none";
+    document.getElementById("file-input").style.display   = t === "file"   ? "block" : "none";
+  }
+
+  // ── Drag & Drop File Handler ───────────────────────────────
+  function setupFileInput() {
+    const dropZone = document.getElementById("file-drop-zone");
+    const filePicker = document.getElementById("file-picker");
+    const fileInput = document.getElementById("file-path");
+    const fileInfo = document.getElementById("file-info");
+
+    if (!dropZone) return;
+
+    // Klik untuk buka file dialog
+    dropZone.addEventListener("click", () => filePicker.click());
+
+    // Drag over
+    dropZone.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      dropZone.classList.add("drag-over");
+    });
+
+    dropZone.addEventListener("dragleave", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      dropZone.classList.remove("drag-over");
+    });
+
+    // Drop
+    dropZone.addEventListener("drop", async (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      dropZone.classList.remove("drag-over");
+      
+      const files = e.dataTransfer.files;
+      if (files.length > 0) {
+        await handleFileSelection(files[0], dropZone, fileInput, fileInfo);
+      }
+    });
+
+    // File picker change
+    filePicker.addEventListener("change", async (e) => {
+      if (e.target.files.length > 0) {
+        await handleFileSelection(e.target.files[0], dropZone, fileInput, fileInfo);
+      }
+    });
+  }
+
+  async function handleFileSelection(file, dropZone, fileInput, fileInfo) {
+    const maxSize = 2 * 1024 * 1024 * 1024; // 2GB
+    const validTypes = [
+      'video/mp4', 'video/avi', 'video/quicktime', 'video/x-msvideo',
+      'image/jpeg', 'image/png', 'image/jpg'
+    ];
+
+    // Validasi tipe file
+    if (!validTypes.includes(file.type) && !file.name.match(/\.(mp4|avi|mov|jpg|jpeg|png)$/i)) {
+      log(`Format file tidak didukung: ${file.name}`, "log-err");
+      fileInfo.innerHTML = `<span style="color:var(--red);">❌ Format tidak didukung</span>`;
+      return;
+    }
+
+    // Validasi ukuran file (untuk drag & drop lokal)
+    if (file.size > maxSize) {
+      log(`File terlalu besar: ${(file.size / 1024 / 1024 / 1024).toFixed(2)}GB > 2GB`, "log-err");
+      fileInfo.innerHTML = `<span style="color:var(--red);">❌ File terlalu besar (max 2GB)</span>`;
+      return;
+    }
+
+    // Update UI
+    dropZone.classList.add("file-selected");
+    fileInput.value = "";
+    const sizeStr = file.size > 1024 * 1024 
+      ? `${(file.size / 1024 / 1024).toFixed(1)}MB`
+      : `${(file.size / 1024).toFixed(1)}KB`;
+    
+    fileInfo.innerHTML = `<span style="color:var(--green);">✓ File dipilih:</span><br><strong>${file.name}</strong><br>${sizeStr}`;
+    
+    log(`Mengupload file: ${file.name} (${sizeStr})`, "log-info");
+
+    fileUploadInFlight = uploadSelectedFile(file);
+    const result = await fileUploadInFlight;
+    fileUploadInFlight = null;
+
+    if (!result.ok) {
+      dropZone.classList.remove("file-selected");
+      fileInfo.innerHTML = `<span style="color:var(--red);">${result.message}</span>`;
+      log(result.message, "log-err");
+      return;
+    }
+
+    fileInput.value = result.path;
+    fileInfo.innerHTML = `<span style="color:var(--green);">File siap diproses</span><br><strong>${file.name}</strong><br>${sizeStr}`;
+    log(`File siap diproses: ${file.name}`, "log-ok");
+  }
+
+  function getSource() {
+    const t = document.getElementById("source-type").value;
+    if (t === "webcam") return document.getElementById("webcam-idx").value;
+    if (t === "rtsp")   return document.getElementById("rtsp-url").value.trim();
+    return document.getElementById("file-path").value.trim();
+  }
+
+  async function uploadSelectedFile(file) {
+    const formData = new FormData();
+    formData.append("source_file", file);
+
+    try {
+      const res = await fetch(`${BASE}/upload_source`, {
+        method: "POST",
+        body: formData,
+      });
+      const payload = await res.json();
+      if (!res.ok || !payload.ok) {
+        return { ok: false, message: payload.message || "Upload file gagal" };
+      }
+      return { ok: true, path: payload.path };
+    } catch (err) {
+      return { ok: false, message: `Upload file gagal: ${err}` };
+    }
+  }
+
+  // ── Pipeline control ──────────────────────────────────────
+  async function startPipeline() {
+    if (fileUploadInFlight) {
+      log("Menunggu upload file selesai...", "log-info");
+      const uploadResult = await fileUploadInFlight;
+      if (!uploadResult.ok) return;
+    }
+
+    const source = getSource();
+    if (!source && source !== "0") { log("Source tidak boleh kosong", "log-err"); return; }
+    const res = await fetch(`${BASE}/control`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "start", source })
+    });
+    const j = await res.json();
+    log(j.message, j.ok ? "log-ok" : "log-err");
+    document.getElementById("ctrl-msg").textContent = j.message;
+  }
+
+  async function stopPipeline() {
+    const res = await fetch(`${BASE}/control`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "stop" })
+    });
+    const j = await res.json();
+    log(j.message, "log-info");
+    document.getElementById("ctrl-msg").textContent = j.message;
+  }
+
+  // ── Config apply ──────────────────────────────────────────
+  async function applyConfig() {
+    // Get model path dari selector atau custom input
+    const modelPath = document.getElementById("model-selector").value ||
+                      document.getElementById("model-path").value.trim();
+    
+    if (!modelPath) {
+      log("Pilih atau masukkan model path", "log-err");
+      return;
+    }
+    
+    const body = {
+      model_path: modelPath,
+      infer_device: document.getElementById("infer-device").value,
+      conf:       parseFloat(document.getElementById("sl-conf").value),
+      iou:        parseFloat(document.getElementById("sl-iou").value),
+      imgsz:      parseInt(document.getElementById("sl-imgsz").value),
+      frame_skip: parseInt(document.getElementById("sl-skip").value),
+    };
+    const res = await fetch(`${BASE}/config`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body)
+    });
+    const j = await res.json();
+    const msg = j.ok ? `✔ Diterapkan: ${j.changed.join(", ")}` : "Gagal";
+    document.getElementById("cfg-msg").textContent = msg;
+    log(msg, j.ok ? "log-ok" : "log-err");
+  }
+
+  // ── Load available models ───────────────────────────────────
+  async function loadModels() {
+    try {
+      const res = await fetch(`${BASE}/models`);
+      const j = await res.json();
+      if (!j.ok || !j.models) return;
+
+      const selector = document.getElementById("model-selector");
+      const currentPath = document.getElementById("model-path")?.value || "";
+      
+      // Clear existing options except the first one
+      selector.innerHTML = '<option value="">— Pilih model tersedia —</option>';
+      
+      j.models.forEach(model => {
+        const option = document.createElement("option");
+        option.value = model.path;
+        
+        // Format label dengan type dan info
+        const typeIcon = model.type === "openvino" ? "🚀" : 
+                        model.type === "pytorch" ? "🔥" : "⚙️";
+        option.textContent = `${typeIcon} ${model.name} (${model.type})`;
+        
+        // Highlight current model
+        if (model.is_current) option.selected = true;
+        selector.appendChild(option);
+      });
+      
+      // Tambah opsi custom
+      const customOption = document.createElement("option");
+      customOption.value = "custom";
+      customOption.textContent = "✏️ Masukkan custom path...";
+      selector.appendChild(customOption);
+    } catch(e) {
+      console.log("Gagal load models:", e);
+    }
+  }
+
+  function onModelChange() {
+    const selector = document.getElementById("model-selector");
+    const customDiv = document.getElementById("custom-model-div");
+    const infoDiv = document.getElementById("model-info");
+    const selectedValue = selector.value;
+
+    if (selectedValue === "custom") {
+      // Tampilkan input custom
+      customDiv.style.display = "block";
+      infoDiv.innerHTML = "📝 Masukkan path model secara manual";
+    } else if (selectedValue) {
+      // Pilih model dari list
+      customDiv.style.display = "none";
+      const selectedOption = selector.options[selector.selectedIndex];
+      const modelName = selectedOption.textContent;
+      infoDiv.innerHTML = `✓ Model dipilih: <strong>${modelName}</strong>`;
+    } else {
+      customDiv.style.display = "none";
+      infoDiv.innerHTML = "";
+    }
+  }
+
+  // ── Load config awal ──────────────────────────────────────
+  async function loadConfig() {
+    try {
+      const res = await fetch(`${BASE}/config`);
+      const j = await res.json();
+      document.getElementById("sl-conf").value   = j.conf;
+      document.getElementById("lbl-conf").textContent = j.conf;
+      document.getElementById("sl-iou").value    = j.iou;
+      document.getElementById("lbl-iou").textContent  = j.iou;
+      document.getElementById("sl-imgsz").value  = j.imgsz;
+      document.getElementById("sl-skip").value   = j.frame_skip;
+      document.getElementById("model-path").value = j.model_path ?? "";
+      document.getElementById("infer-device").value = j.infer_device ?? "intel:gpu";
+    } catch(e) {}
+    
+    // Load available models
+    await loadModels();
+  }
+
+  // ── SSE live state update ─────────────────────────────────
+  let frameHistory = [];   // timestamp inferensi 60 detik terakhir
+  let totalFramesSent = 0;
+
+  function connectSSE() {
+    const es = new EventSource(`${BASE}/results/stream`);
+
+    es.onmessage = (ev) => {
+      let d;
+      try { d = JSON.parse(ev.data); } catch { return; }
+
+      // Status pill
+      const pill = document.getElementById("status-pill");
+      const stxt = document.getElementById("status-text");
+      if (d.running) {
+        pill.className = "status-pill running";
+        stxt.textContent = "Running";
+      } else {
+        pill.className = d.error ? "status-pill error" : "status-pill";
+        stxt.textContent = d.error ? "Error" : "Idle";
+      }
+
+      // Tombol start/stop
+      document.getElementById("btn-start").disabled = d.running;
+      document.getElementById("btn-stop").disabled  = !d.running;
+
+      // Counter
+      const count = d.total_detections ?? 0;
+      document.getElementById("count-num").textContent = count;
+      document.getElementById("frame-label").textContent = `Frame #${d.frame_id ?? 0}`;
+      document.getElementById("last-ts").textContent =
+        d.timestamp ? `Diperbarui: ${new Date(d.timestamp).toLocaleTimeString("id-ID")}` : "";
+
+      // Stat: frame dikirim
+      if (d.frame_id) {
+        totalFramesSent = d.frame_id;
+        document.getElementById("stat-frames").textContent = totalFramesSent;
+      }
+
+      // Stat: rata-rata confidence
+      const dets = d.detections ?? [];
+      if (dets.length > 0) {
+        const avg = dets.reduce((s, x) => s + x.confidence, 0) / dets.length;
+        document.getElementById("stat-avg").textContent = avg.toFixed(2);
+      } else {
+        document.getElementById("stat-avg").textContent = "—";
+      }
+
+      // Stat: count_in / count_out
+      const cin  = d.count_in  ?? 0;
+      const cout = d.count_out ?? 0;
+      document.getElementById("stat-count-in").textContent  = cin;
+      document.getElementById("stat-count-out").textContent = cout;
+      document.getElementById("stat-net").textContent       = cout - cin;
+
+      // Stat: inferensi/min
+      const now = Date.now();
+      if (d.running && d.frame_id) {
+        frameHistory.push(now);
+        frameHistory = frameHistory.filter(t => now - t < 60000);
+      }
+      document.getElementById("stat-fps").textContent = frameHistory.length;
+
+      // Stat: inference latency
+      const latency = d.inference_latency_ms ?? 0;
+      if (latency > 0) {
+        document.getElementById("stat-latency").textContent = latency + "ms";
+      } else {
+        document.getElementById("stat-latency").textContent = "—";
+      }
+
+      // Tabel deteksi
+      renderTable(dets);
+
+      // Log error jika ada
+      if (d.error) log(`⚠ ${d.error}`, "log-err");
+    };
+
+    es.onerror = () => {
+      log("SSE terputus, mencoba reconnect...", "log-err");
+      es.close();
+      setTimeout(connectSSE, 3000);
+    };
+  }
+
+  function renderTable(detections) {
+    const tbody = document.getElementById("det-tbody");
+    if (!detections || detections.length === 0) {
+      tbody.innerHTML = '<tr class="empty-row"><td colspan="4">Tidak ada objek terdeteksi</td></tr>';
+      return;
+    }
+    tbody.innerHTML = detections.map((d, i) => {
+      const pct = Math.round(d.confidence * 100);
+      const box = d.box ? `[${d.box.join(", ")}]` : "—";
+      const tid = d.track_id != null ? `#${d.track_id}` : `—`;
+      return `
+        <tr>
+          <td><span style="font-weight:700;color:var(--accent);">${tid}</span></td>
+          <td><span class="label-chip">${d.label}</span></td>
+          <td>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <div class="conf-bar-wrap">
+                <div class="conf-bar" style="width:${pct}%"></div>
+              </div>
+              <span>${pct}%</span>
+            </div>
+          </td>
+          <td style="color:var(--muted);font-family:monospace;font-size:11px;">${box}</td>
+        </tr>`;
+    }).join("");
+  }
+
+  // ── Init ──────────────────────────────────────────────────
+  loadConfig();
+  connectSSE();
+  setupFileInput();
+  log("Dashboard dimuat. Pilih source lalu tekan Start.", "log-info");
+</script>
+</body>
+</html>

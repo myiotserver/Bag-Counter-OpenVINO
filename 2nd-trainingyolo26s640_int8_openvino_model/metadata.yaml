@@ -1,0 +1,24 @@
+description: Ultralytics YOLO26s model trained on /datasets/bag-counter-74ef1bae/data.yaml
+author: Ultralytics
+date: '2026-05-24T18:55:07.850184'
+version: 8.4.53
+license: AGPL-3.0 License (https://ultralytics.com/license)
+docs: https://docs.ultralytics.com
+stride: 32
+task: detect
+batch: 1
+imgsz:
+- 640
+- 640
+names:
+  0: bag
+args:
+  data: bag_counter_yolo_dataset\data_int8.yaml
+  batch: 1
+  fraction: 1.0
+  half: false
+  int8: true
+  dynamic: false
+  nms: false
+channels: 3
+end2end: true

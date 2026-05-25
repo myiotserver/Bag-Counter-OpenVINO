@@ -1,0 +1,36 @@
+# Virtual environment
+.venv/
+venv/
+env/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# IDE
+.vscode/
+.claude/
+.idea/
+*.swp
+*.swo
+
+# Large files
+*.pt
+*.onnx
+*.pth
+*.zip
+
+# Dataset images (too large, keep only labels)
+bag_counter_yolo_dataset/images/
+
+# Uploaded files
+uploaded_sources/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Cache
+*.cache

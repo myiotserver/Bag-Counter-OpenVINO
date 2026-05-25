@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" width="1920" height="1080">
+  <defs>
+    <!-- Deep dark navy base -->
+    <radialGradient id="base" cx="50%" cy="50%" r="80%">
+      <stop offset="0%" stop-color="#111C28"/>
+      <stop offset="100%" stop-color="#0A1420"/>
+    </radialGradient>
+
+    <!-- Deep sea blue top-right -->
+    <radialGradient id="blue1" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#1C5E82" stop-opacity="0.70"/>
+      <stop offset="100%" stop-color="#0E3D5C" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Deep sea blue bottom-left -->
+    <radialGradient id="blue2" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#184F72" stop-opacity="0.65"/>
+      <stop offset="100%" stop-color="#0B3452" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Brighter sea blue accent -->
+    <radialGradient id="blue3" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#2A7BA8" stop-opacity="0.50"/>
+      <stop offset="100%" stop-color="#1A5A7E" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Muted warm orange top-left -->
+    <radialGradient id="orange1" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#8C4018" stop-opacity="0.55"/>
+      <stop offset="100%" stop-color="#5A2808" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Muted orange bottom-right -->
+    <radialGradient id="orange2" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#A04C20" stop-opacity="0.48"/>
+      <stop offset="100%" stop-color="#652E0A" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Warm orange mid accent -->
+    <radialGradient id="orange3" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#C46030" stop-opacity="0.28"/>
+      <stop offset="100%" stop-color="#7A3210" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Dark center depth -->
+    <radialGradient id="depth" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#0D1820" stop-opacity="0.60"/>
+      <stop offset="100%" stop-color="#0A1420" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Subtle blue-teal glow -->
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#3A9EC4" stop-opacity="0.12"/>
+      <stop offset="100%" stop-color="#1A6E94" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Base background -->
+  <rect width="1920" height="1080" fill="url(#base)"/>
+
+  <!-- Deep sea blue blobs -->
+  <ellipse cx="1650" cy="160" rx="700" ry="580" fill="url(#blue1)"/>
+  <ellipse cx="1800" cy="860" rx="540" ry="470" fill="url(#blue2)"/>
+  <ellipse cx="900" cy="60" rx="520" ry="360" fill="url(#blue3)"/>
+
+  <!-- Muted orange blobs -->
+  <ellipse cx="160" cy="200" rx="580" ry="460" fill="url(#orange1)"/>
+  <ellipse cx="240" cy="960" rx="500" ry="420" fill="url(#orange2)"/>
+  <ellipse cx="750" cy="680" rx="360" ry="280" fill="url(#orange3)"/>
+
+  <!-- Center depth to keep core dark and elegant -->
+  <ellipse cx="960" cy="540" rx="700" ry="560" fill="url(#depth)"/>
+
+  <!-- Subtle blue-teal shimmer -->
+  <ellipse cx="1200" cy="420" rx="340" ry="240" fill="url(#glow)"/>
+
+  <!-- Very subtle texture lines -->
+  <ellipse cx="480" cy="580" rx="240" ry="180" fill="#A85030" fill-opacity="0.05"/>
+  <ellipse cx="1480" cy="680" rx="200" ry="160" fill="#2A82B0" fill-opacity="0.07"/>
+</svg>

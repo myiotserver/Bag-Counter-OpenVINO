@@ -1,0 +1,11 @@
+# Requirements - Bag Counter (Local YOLO/OpenVINO + Web UI + Node-RED Bridge)
+#
+# Install: pip install -r requirements.txt
+
+opencv-python   # capture video / webcam / RTSP, bounding box, preview
+numpy           # array processing dan placeholder frame
+flask           # Web UI + HTTP server bridge untuk Node-RED
+cjm-byte-track  # ByteTrack multi-object tracker
+scipy           # dependency untuk cjm-byte-track
+ultralytics     # local YOLO inference + OpenVINO model loading
+openvino        # runtime OpenVINO untuk Intel CPU/GPU
