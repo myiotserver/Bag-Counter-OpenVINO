@@ -58,6 +58,12 @@ def index():
     return render_template("index.html", bridge_port=config.BRIDGE_PORT)
 
 
+@app.route("/monitor", methods=["GET"])
+def monitor():
+    """Read-only monitoring dashboard untuk second monitor / production floor."""
+    return render_template("monitor.html", bridge_port=config.BRIDGE_PORT)
+
+
 @app.route("/video_feed", methods=["GET"])
 def video_feed():
     """
